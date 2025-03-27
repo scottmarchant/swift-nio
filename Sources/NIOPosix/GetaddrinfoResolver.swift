@@ -158,8 +158,20 @@ internal final class GetaddrinfoResolver: Resolver, Sendable {
             }
         }
         #else
-        var info: UnsafeMutablePointer<addrinfo>?
+        #if os(WASI)
+        let hint = CAddressInfo(
+            ai_socktype: self.aiSocktype.rawValue,
+            ai_protocol: self.aiProtocol.rawValue
+        )
+        guard let info = getaddrinfo(host: host, port: String(port), hint: hint) else {
+            self.fail(SocketAddressError.unknown(host: host, port: port))
+            return
+        }
+        self.parseAndPublishResults(info, host: host)
+        freeaddrinfo(info)
 
+        #else
+        var info: AddressInfoReference?
         var hint = addrinfo()
         hint.ai_socktype = self.aiSocktype.rawValue
         hint.ai_protocol = self.aiProtocol.rawValue
@@ -167,7 +179,6 @@ internal final class GetaddrinfoResolver: Resolver, Sendable {
             self.fail(SocketAddressError.unknown(host: host, port: port))
             return
         }
-
         if let info = info {
             self.parseAndPublishResults(info, host: host)
             freeaddrinfo(info)
@@ -175,6 +186,9 @@ internal final class GetaddrinfoResolver: Resolver, Sendable {
             // this is odd, getaddrinfo returned NULL
             self.fail(SocketAddressError.unsupported)
         }
+        #endif
+
+
         #endif
     }
 
@@ -184,16 +198,22 @@ internal final class GetaddrinfoResolver: Resolver, Sendable {
     ///   - info: The pointer to the first of the `addrinfo` structures in the list.
     ///   - host: The hostname we resolved.
     #if os(Windows)
-    internal typealias CAddrInfo = ADDRINFOW
+    internal typealias CAddrInfo = UnsafeMutablePointer<ADDRINFOW>
+    #elseif os(WASI)
+    internal typealias CAddrInfo = CAddressInfo
     #else
-    internal typealias CAddrInfo = addrinfo
+    internal typealias CAddrInfo = UnsafeMutablePointer<addrinfo>
     #endif
 
-    private func parseAndPublishResults(_ info: UnsafeMutablePointer<CAddrInfo>, host: String) {
+    private func parseAndPublishResults(_ info: CAddrInfo, host: String) {
         var v4Results: [SocketAddress] = []
         var v6Results: [SocketAddress] = []
 
-        var info: UnsafeMutablePointer<CAddrInfo> = info
+        #if os(WASI)
+        var info: CAddrInfo = info
+        #else
+        var info = info
+        #endif
         while true {
             let addressBytes = UnsafeRawPointer(info.pointee.ai_addr)
             switch NIOBSDSocket.AddressFamily(rawValue: info.pointee.ai_family) {
