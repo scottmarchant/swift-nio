@@ -397,8 +397,26 @@ extension NIOBSDSocket.Option {
     public static let mptcp_info = NIOBSDSocket.Option(rawValue: 1)
 }
 
-#if !os(WASI)
 // Socket Options
+#if os(WASI)
+import CNIOWASI
+package let O_APPEND = CNIOWASI_O_APPEND
+package let O_SYNC = CNIOWASI_O_SYNC
+package let O_NONBLOCK = CNIOWASI_O_NONBLOCK
+
+package let SO_REUSEADDR = CNIOWASI_SO_REUSEADDR
+package let SO_ERROR = CNIOWASI_SO_ERROR
+package let SO_SNDBUF = CNIOWASI_SO_SNDBUF
+package let SO_RCVBUF = CNIOWASI_SO_RCVBUF
+package let SO_KEEPALIVE = CNIOWASI_SO_KEEPALIVE
+package let SO_ACCEPTCONN = CNIOWASI_SO_ACCEPTCONN
+package let SO_PROTOCOL = CNIOWASI_SO_PROTOCOL
+package let SO_DOMAIN = CNIOWASI_SO_DOMAIN
+package let SO_RCVTIMEO = CNIOWASI_SO_RCVTIMEO
+
+package let SOCK_DGRAM = CNIOWASI_SOCK_DGRAM
+package let SOCK_STREAM = CNIOWASI_SOCK_STREAM
+#endif
 extension NIOBSDSocket.Option {
     /// Get the error status and clear.
     public static let so_error = Self(rawValue: SO_ERROR)
@@ -406,8 +424,10 @@ extension NIOBSDSocket.Option {
     /// Use keep-alives.
     public static let so_keepalive = Self(rawValue: SO_KEEPALIVE)
 
+    #if !os(WASI)
     /// Linger on close if unsent data is present.
     public static let so_linger = Self(rawValue: SO_LINGER)
+    #endif
 
     /// Specifies the total per-socket buffer space reserved for receives.
     public static let so_rcvbuf = Self(rawValue: SO_RCVBUF)
@@ -421,10 +441,11 @@ extension NIOBSDSocket.Option {
     /// Allows the socket to be bound to an address that is already in use.
     public static let so_reuseaddr = Self(rawValue: SO_REUSEADDR)
 
+    #if !os(WASI)
     /// Allows the socket to send broadcast messages.
     public static let so_broadcast = Self(rawValue: SO_BROADCAST)
+    #endif
 }
-#endif
 
 #if !os(Windows) && !os(WASI)
 extension NIOBSDSocket.Option {

@@ -49,12 +49,18 @@ class ServerSocket: BaseSocket, ServerSocketProtocol {
             protocolSubtype: protocolSubtype,
             setNonBlocking: setNonBlocking
         )
+        #if os(WASI)
+        // No .unix case currently provided in WASILibc
+        cleanupOnClose = false
+        #else
         switch protocolFamily {
         case .unix:
             cleanupOnClose = true
         default:
             cleanupOnClose = false
         }
+        #endif
+
         try super.init(socket: sock)
     }
 

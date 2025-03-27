@@ -17,6 +17,8 @@ import NIOCore
 import CNIODarwin
 #elseif os(Linux) || os(FreeBSD) || os(Android)
 import CNIOLinux
+#elseif os(WASI)
+import CNIOWASI
 #elseif os(Windows)
 import CNIOWindows
 #endif

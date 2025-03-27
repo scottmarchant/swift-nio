@@ -17,6 +17,10 @@ import CNIODarwin
 import CNIOLinux
 import NIOCore
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 private struct PendingDatagramWrite {
     var data: ByteBuffer
     var promise: Optional<EventLoopPromise<Void>>

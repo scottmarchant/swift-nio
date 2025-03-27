@@ -27,6 +27,10 @@ import let WinSDK.SOCK_STREAM
 import struct WinSDK.socklen_t
 #endif
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 protocol _SocketShutdownProtocol {
     var cValue: CInt { get }
 }
@@ -86,6 +90,7 @@ extension NIOBSDSocket.SocketType {
         NIOBSDSocket.SocketType(rawValue: SOCK_STREAM)
     #endif
 
+    #if !os(WASI)
     #if os(Linux) && !canImport(Musl)
     internal static let raw: NIOBSDSocket.SocketType =
         NIOBSDSocket.SocketType(rawValue: CInt(SOCK_RAW.rawValue))
@@ -93,6 +98,7 @@ extension NIOBSDSocket.SocketType {
     internal static let raw: NIOBSDSocket.SocketType =
         NIOBSDSocket.SocketType(rawValue: SOCK_RAW)
     #endif
+    #endif // !os(WASI)
 }
 
 // IPv4 Options
@@ -235,6 +241,7 @@ protocol _BSDSocketProtocol {
         length len: size_t
     ) throws -> IOResult<size_t>
 
+    #if !os(WASI)
     // NOTE: this should return a `ssize_t`, however, that is not a standard
     // type, and defining that type is difficult.  Opt to return a `size_t`
     // which is the same size, but is unsigned.
@@ -254,6 +261,7 @@ protocol _BSDSocketProtocol {
         flags: CInt
     )
         throws -> IOResult<size_t>
+    #endif // !os(WASI)
 
     static func send(
         socket s: NIOBSDSocket.Handle,
@@ -277,6 +285,7 @@ protocol _BSDSocketProtocol {
         protocolSubtype: NIOBSDSocket.ProtocolSubtype
     ) throws -> NIOBSDSocket.Handle
 
+    #if !os(WASI)
     static func recvmmsg(
         socket: NIOBSDSocket.Handle,
         msgvec: UnsafeMutablePointer<MMsgHdr>,
@@ -291,6 +300,7 @@ protocol _BSDSocketProtocol {
         vlen: CUnsignedInt,
         flags: CInt
     ) throws -> IOResult<Int>
+    #endif // !os(WASI)
 
     // NOTE: this should return a `ssize_t`, however, that is not a standard
     // type, and defining that type is difficult.  Opt to return a `size_t`
