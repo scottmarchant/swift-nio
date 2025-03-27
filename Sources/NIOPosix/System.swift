@@ -535,7 +535,7 @@ internal enum Posix: Sendable {
     static let IPV6_RECVPKTINFO: CInt = CNIODarwin_IPV6_RECVPKTINFO
     static let IPV6_PKTINFO: CInt = CNIODarwin_IPV6_PKTINFO
     #elseif os(Linux) || os(FreeBSD) || os(Android)
-    static let IP_RECVPKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO)
+    static let IP_RECVPKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO) // SM: This is probably a bug, should be `= CNIOLinux.IP_RECVPKTINFO`
     static let IP_PKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO)
 
     static let IPV6_RECVPKTINFO: CInt = CInt(CNIOLinux.IPV6_RECVPKTINFO)
