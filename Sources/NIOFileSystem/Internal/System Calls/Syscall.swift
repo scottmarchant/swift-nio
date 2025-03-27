@@ -26,6 +26,8 @@ import CNIOLinux
 #elseif canImport(Bionic)
 @preconcurrency import Bionic
 import CNIOLinux
+#elseif canImport(WASILibc)
+import WASILibc
 #endif
 
 @_spi(Testing)
@@ -108,7 +110,7 @@ public enum Syscall {
     }
     #endif
 
-    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic)
+    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic) || canImport(WASILibc)
     @_spi(Testing)
     public static func rename(
         from old: FilePath,
@@ -150,7 +152,7 @@ public enum Syscall {
     }
     #endif
 
-    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic)
+    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic) || canImport(WASILibc)
     @_spi(Testing)
     public struct LinkAtFlags: OptionSet {
         @_spi(Testing)
@@ -255,7 +257,7 @@ public enum Syscall {
         }
     }
 
-    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic)
+    #if canImport(Glibc) || canImport(Musl) || canImport(Bionic) || canImport(WASILibc)
     @_spi(Testing)
     public static func sendfile(
         to output: FileDescriptor,
