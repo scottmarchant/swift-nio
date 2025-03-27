@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if os(Linux) || os(Android) || os(FreeBSD) || canImport(Darwin)
+#if os(Linux) || os(Android) || os(FreeBSD) || os(WASI) || canImport(Darwin)
 
 #if os(Linux) || os(Android)
 import CNIOLinux
@@ -24,6 +24,12 @@ private typealias ThreadDestructor = @convention(c) (UnsafeMutableRawPointer) ->
 #else
 private typealias ThreadDestructor = @convention(c) (UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
 #endif
+#elseif os(WASI)
+import CNIOWASI
+private let sys_pthread_getname_np = pthread_getname_np
+private let sys_pthread_setname_np = pthread_setname_np
+private typealias ThreadDestructor = @convention(c) (UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
+
 #elseif canImport(Darwin)
 private let sys_pthread_getname_np = pthread_getname_np
 // Emulate the same method signature as pthread_setname_np on Linux.
@@ -50,7 +56,7 @@ private func sysPthread_create(
     pthread_attr_destroy(&attr)
     return thread
     #else
-    #if canImport(Musl)
+    #if canImport(Musl) || os(WASI)
     var handleLinux: OpaquePointer? = nil
     let result = pthread_create(
         &handleLinux,
