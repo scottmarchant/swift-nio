@@ -287,9 +287,13 @@ class BaseSocket: BaseSocketProtocol {
         if level == .tcp && name == .tcp_nodelay {
             switch try? self.localAddress().protocol {
             case .some(.inet), .some(.inet6): break
+            
+            #if !os(WASI)
             // Setting TCP_NODELAY on UNIX domain sockets will fail. Previously we had a bug where we would ignore
             // most socket options settings so for the time being we'll just ignore this. Let's revisit for NIO 2.0.
             case .some(.unix): return
+            #endif
+
             // We'll also ignore this option on socket protocol families that NIO doesn't explicitly support.
             case .some(_), .none: return
             }

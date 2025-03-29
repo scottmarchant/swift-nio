@@ -11,7 +11,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
+
+#if os(WASI)
+import CNIOWASI
+#else
 import CNIOLinux
+#endif
 import NIOCore
 
 #if os(Windows)
@@ -120,8 +125,12 @@ final class SocketChannel: BaseStreamSocketChannel<Socket>, @unchecked Sendable 
         switch option {
         case _ as ChannelOptions.Types.ConnectTimeoutOption:
             return connectTimeout as! Option.Value
+        #if !os(WASI)
+        // TODO: SM: Instead of doing this, make LocalVsockContextID completely undefined for wasm. That is safest.
+        // the problem with inner-function elision like this is that the API may appear to work, but it won't
         case _ as ChannelOptions.Types.LocalVsockContextID:
             return try self.socket.getLocalVsockContextID() as! Option.Value
+        #endif
         default:
             return try super.getOption0(option)
         }
@@ -275,8 +284,10 @@ final class ServerSocketChannel: BaseSocketChannel<ServerSocket>, @unchecked Sen
         switch option {
         case _ as ChannelOptions.Types.BacklogOption:
             return backlog as! Option.Value
+        #if !os(WASI)
         case _ as ChannelOptions.Types.LocalVsockContextID:
             return try self.socket.getLocalVsockContextID() as! Option.Value
+        #endif
         default:
             return try super.getOption0(option)
         }
@@ -311,8 +322,13 @@ final class ServerSocketChannel: BaseSocketChannel<ServerSocket>, @unchecked Sen
             switch target {
             case .socketAddress(let address):
                 try socket.bind(to: address)
+            
             case .vsockAddress(let address):
+                #if !os(WASI)
                 try socket.bind(to: address)
+                #else
+                fatalError("Cannot perform vector bindings on this operating system")
+                #endif
             }
             self.updateCachedAddressesFromSocket(updateRemote: false)
             try self.socket.listen(backlog: backlog)
@@ -720,6 +736,7 @@ final class DatagramChannel: BaseSocketChannel<Socket>, @unchecked Sendable {
         throw ChannelError._operationUnsupported
     }
 
+    #if !os(WASI)
     override func readFromSocket() throws -> ReadResult {
         if self.vectorReadManager != nil {
             return try self.vectorReadFromSocket()
@@ -791,6 +808,7 @@ final class DatagramChannel: BaseSocketChannel<Socket>, @unchecked Sendable {
         }
         return readResult
     }
+    #endif // !os(WASI)
 
     private func vectorReadFromSocket() throws -> ReadResult {
         #if os(Linux) || os(FreeBSD) || os(Android)
@@ -953,6 +971,7 @@ final class DatagramChannel: BaseSocketChannel<Socket>, @unchecked Sendable {
         self.pendingWrites.failAll(error: error, close: true)
     }
 
+    #if !os(WASI)
     override func writeToSocket() throws -> OverallWriteResult {
         let result = try self.pendingWrites.triggerAppropriateWriteOperations(
             scalarWriteOperation: { (ptr, destinationPtr, destinationSize, metadata) in
@@ -978,6 +997,7 @@ final class DatagramChannel: BaseSocketChannel<Socket>, @unchecked Sendable {
         )
         return result
     }
+    #endif
 
     // MARK: Datagram Channel overrides not required by BaseSocketChannel
 
@@ -1066,7 +1086,7 @@ extension DatagramChannel: MulticastChannel {
         }
     }
 
-    #if !os(Windows)
+    #if !os(Windows) && !os(WASI)
     @available(*, deprecated, renamed: "joinGroup(_:device:promise:)")
     func joinGroup(_ group: SocketAddress, interface: NIONetworkInterface?, promise: EventLoopPromise<Void>?) {
         if eventLoop.inEventLoop {

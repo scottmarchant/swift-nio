@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "swift",
+            "args": [
+                "build",
+                "--swift-sdk",
+                "6.1-SNAPSHOT-2025-03-20-a-wasm32-unknown-wasip1-threads",
+                "--target",
+                "NIOPosix",
+                "-Xswiftc",
+                "-diagnostic-style=llvm",
+                // SM: NOTE: The following aren't needed as long as they are copy-pasted in the NIOPosix module as well, when building NIOPosix
+                // "-Xcc",
+                // "-D__wasilibc_use_wasip2"
+            ],
+            "env": {
+                "DEVELOPER_DIR": "/Applications/Xcode.app"
+            },
+            "cwd": "/Users/scottm/git/ThirdParty/swift-nio",
+            "disableTaskQueue": true,
+            "group": "build",
+            "problemMatcher": [],
+            "label": "swift: Build All",
+            "detail": "SCOTT: swift build --build-tests -Xswiftc -diagnostic-style=llvm"
+        }
+    ]
+}

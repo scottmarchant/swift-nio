@@ -84,7 +84,7 @@ internal enum EventFd {
 @usableFromInline
 internal enum Epoll {
     @usableFromInline
-    internal typealias epoll_event = CNIOLinux.epoll_event
+    internal typealias epoll_event = CNIOLinux.epoll_event // TODO: SM: Make sure we do NOT use CNIOLinux for wasm build (conditionalize it's usage)
 
     @usableFromInline
     internal static let EPOLL_CTL_ADD: CInt = numericCast(CNIOLinux.EPOLL_CTL_ADD)

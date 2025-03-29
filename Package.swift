@@ -114,6 +114,7 @@ let package = Package(
                 "CNIOLinux",
                 "CNIODarwin",
                 "CNIOWindows",
+                "CNIOWASI",
                 "NIOConcurrencyHelpers",
                 "NIOCore",
                 "_NIODataStructures",
@@ -121,6 +122,18 @@ let package = Package(
             ],
             exclude: includePrivacyManifest ? [] : ["PrivacyInfo.xcprivacy"],
             resources: includePrivacyManifest ? [.copy("PrivacyInfo.xcprivacy")] : [],
+
+            // SM: We will need to make these conditional on wasi, and include on all
+            // configs that can consume CNIOWASI.
+            cSettings: [
+                // SM: Ask Max about this. Is this ok?
+                .define("__wasilibc_use_wasip2"),
+
+                .define("_GNU_SOURCE")
+//                .unsafeFlags([
+//                    "-Xcc", "-D__wasilibc_use_wasip2"
+//                ])
+            ],
             swiftSettings: strictConcurrencySettings
         ),
         .target(
@@ -179,7 +192,16 @@ let package = Package(
         ),
         .target(
             name: "CNIOWASI",
-            dependencies: []
+            dependencies: [],
+            cSettings: [
+                // SM: Ask Max about this. Is this ok?
+                .define("__wasilibc_use_wasip2"),
+
+                .define("_GNU_SOURCE"),
+//                .unsafeFlags([
+//                    "-Xcc", "-D__wasilibc_use_wasip2"
+//                ])
+            ]
         ),
         .target(
             name: "NIOConcurrencyHelpers",

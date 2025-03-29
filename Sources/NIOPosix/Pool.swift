@@ -12,6 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 protocol PoolElement {
     init()
     func evictedFromPool()

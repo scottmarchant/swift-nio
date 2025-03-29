@@ -13,6 +13,10 @@
 //===----------------------------------------------------------------------===//
 import NIOCore
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 protocol BaseSocketProtocol: CustomStringConvertible {
     associatedtype SelectableType: Selectable
 
@@ -48,6 +52,7 @@ protocol SocketProtocol: BaseSocketProtocol {
 
     func read(pointer: UnsafeMutableRawBufferPointer) throws -> IOResult<Int>
 
+    #if !os(WASI)
     func recvmsg(
         pointer: UnsafeMutableRawBufferPointer,
         storage: inout sockaddr_storage,
@@ -61,12 +66,15 @@ protocol SocketProtocol: BaseSocketProtocol {
         destinationSize: socklen_t,
         controlBytes: UnsafeMutableRawBufferPointer
     ) throws -> IOResult<Int>
+    #endif // !os(WASI)
 
     func sendFile(fd: CInt, offset: Int, count: Int) throws -> IOResult<Int>
 
+    #if !os(WASI)
     func recvmmsg(msgs: UnsafeMutableBufferPointer<MMsgHdr>) throws -> IOResult<Int>
 
     func sendmmsg(msgs: UnsafeMutableBufferPointer<MMsgHdr>) throws -> IOResult<Int>
+    #endif // !os(WASI)
 
     func shutdown(how: Shutdown) throws
 
@@ -94,12 +102,16 @@ extension BaseSocketProtocol {
     // used by `BaseSocket` and `PipePair`.
     internal static func ignoreSIGPIPE(descriptor fd: CInt) throws {
         #if os(Linux) || os(Android)
-        let haveWeIgnoredSIGPIEThisIsHereToTriggerIgnoringIt = globallyIgnoredSIGPIPE
-        guard haveWeIgnoredSIGPIEThisIsHereToTriggerIgnoringIt else {
+        let haveWeIgnoredSIGPIPEThisIsHereToTriggerIgnoringIt = globallyIgnoredSIGPIPE
+        guard haveWeIgnoredSIGPIPEThisIsHereToTriggerIgnoringIt else {
             fatalError("BUG in NIO. We did not ignore SIGPIPE, this code path should definitely not be reachable.")
         }
         #elseif os(Windows)
         // Deliberately empty: SIGPIPE just ain't a thing on Windows
+        #elseif os(WASI)
+        // TODO: SM: Figure out how often this is hit in practical usage.
+        // If this ends up getting hit, we can dial it back if needed.
+        fatalError("Not yet available in wasi")
         #else
         assert(fd >= 0, "illegal file descriptor \(fd)")
         do {

@@ -15,6 +15,10 @@
 import Atomics
 import NIOCore
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 private protocol SilenceWarning {
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
     func enqueue(_ job: UnownedJob)

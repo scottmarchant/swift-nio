@@ -38,6 +38,12 @@ internal typealias in6_pktinfo = CNIOLinux_in6_pktinfo
 import CNIOWindows
 
 internal typealias MMsgHdr = CNIOWindows_mmsghdr
+#elseif os(WASI)
+#if canImport(WASILibc)
+@_exported @preconcurrency import WASILibc
+#endif
+import CNIOWASI
+internal typealias MMsgHdr = CNIOWASI_mmsghdr
 #else
 #error("The POSIX system module was unable to identify your C library.")
 #endif
@@ -81,11 +87,27 @@ let S_IFBLK = UInt32(SwiftGlibc.S_IFBLK)
 #endif
 #endif
 
+// sm: leftoffhere: Figure out where we are using a socket, and whether we're using nio for the socket.
+// 
+// there appears to be support for it. https://github.com/WebAssembly/WASI/blob/main/wasip2/README.md
+// see also /Users/scottm/Library/org.swift.swiftpm/swift-sdks/swift-wasm-6.1-SNAPSHOT-2025-03-20-a-wasm32-unknown-wasip1-threads.artifactbundle/6.1-SNAPSHOT-2025-03-20-a-wasm32-unknown-wasip1-threads/wasm32-unknown-wasip1-threads/WASI.sdk/include/wasm32-wasip1-threads/sys/socket.h
+// 
+// I might just need to add some more includes, or else wrap the definitions in my shim.c. Usage of bind seems to compile in my c file. Maybe it needs forwarded somehow?
+// 
+// or maybe there is a different swift import?
+// 
+// 
+// See also /Users/scottm/Library/org.swift.swiftpm/swift-sdks/swift-wasm-6.1-SNAPSHOT-2025-03-20-a-wasm32-unknown-wasip1-threads.artifactbundle/6.1-SNAPSHOT-2025-03-20-a-wasm32-unknown-wasip1-threads/wasm32-unknown-wasip1-threads/swift.xctoolchain/usr/lib/swift/wasi/WASILibc.swiftmodule
+// 
+// try to do a wrapper similar to sendmmsg, but for sysBind. If that works, then I have a path forward on a lot of this.
+
+
 // Declare aliases to share more code and not need to repeat #if #else blocks
+
 #if !os(Windows)
 private let sysClose = close
 private let sysShutdown = shutdown
-private let sysBind = bind
+private let sysBind: @Sendable (Int32, UnsafePointer<sockaddr>?, socklen_t) -> Int32 = bind
 private let sysFcntl: @Sendable @convention(c) (CInt, CInt, CInt) -> CInt = { fcntl($0, $1, $2) }
 private let sysSocket = socket
 private let sysSetsockopt = setsockopt
@@ -129,11 +151,13 @@ private let sysWritev: @convention(c) (Int32, UnsafePointer<iovec>?, CInt) -> CL
 #if canImport(Android)
 private let sysRecvMsg: @convention(c) (CInt, UnsafeMutablePointer<msghdr>, CInt) -> ssize_t = recvmsg
 private let sysSendMsg: @convention(c) (CInt, UnsafePointer<msghdr>, CInt) -> ssize_t = sendmsg
-#elseif !os(Windows)
+#elseif !os(Windows) && !os(WASI)
 private let sysRecvMsg: @convention(c) (CInt, UnsafeMutablePointer<msghdr>?, CInt) -> ssize_t = recvmsg
 private let sysSendMsg: @convention(c) (CInt, UnsafePointer<msghdr>?, CInt) -> ssize_t = sendmsg
 #endif
+#if !os(WASI)
 private let sysDup: @convention(c) (CInt) -> CInt = dup
+#endif
 #if canImport(Android)
 private let sysGetpeername:
     @convention(c) (CInt, UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) -> CInt = getpeername
@@ -148,16 +172,16 @@ private let sysGetsockname:
 
 #if os(Android)
 private let sysIfNameToIndex: @convention(c) (UnsafePointer<CChar>) -> CUnsignedInt = if_nametoindex
-#else
+#elseif !os(WASI)
 private let sysIfNameToIndex: @convention(c) (UnsafePointer<CChar>?) -> CUnsignedInt = if_nametoindex
 #endif
 #if canImport(Android)
 private let sysSocketpair: @convention(c) (CInt, CInt, CInt, UnsafeMutablePointer<CInt>) -> CInt = socketpair
-#elseif !os(Windows)
+#elseif !os(Windows) && !os(WASI)
 private let sysSocketpair: @convention(c) (CInt, CInt, CInt, UnsafeMutablePointer<CInt>?) -> CInt = socketpair
 #endif
 
-#if os(Linux) || os(Android) || canImport(Darwin)
+#if os(Linux) || os(Android) || canImport(Darwin) || os(WASI)
 private let sysFstat = fstat
 private let sysStat = stat
 private let sysLstat = lstat
@@ -353,7 +377,7 @@ internal func syscall<T>(
         }
     }
 }
-#elseif os(Linux) || os(Android)
+#elseif os(Linux) || os(Android) || os(WASI)
 @inline(__always)
 @inlinable
 @discardableResult
@@ -456,7 +480,7 @@ internal enum Posix: Sendable {
     static let SHUT_WR: CInt = CInt(Darwin.SHUT_WR)
     @usableFromInline
     static let SHUT_RDWR: CInt = CInt(Darwin.SHUT_RDWR)
-    #elseif os(Linux) || os(FreeBSD) || os(Android)
+    #elseif os(Linux) || os(FreeBSD) || os(Android) || os(WASI)
     #if canImport(Glibc)
     @usableFromInline
     static let UIO_MAXIOV: Int = Int(Glibc.UIO_MAXIOV)
@@ -484,6 +508,14 @@ internal enum Posix: Sendable {
     static let SHUT_WR: CInt = CInt(Android.SHUT_WR)
     @usableFromInline
     static let SHUT_RDWR: CInt = CInt(Android.SHUT_RDWR)
+    #elseif canImport(CNIOWASI)
+    static let UIO_MAXIOV: Int = Int(UIO_MAXIOV)
+    @usableFromInline
+    static let SHUT_RD: CInt = CInt(SHUT_RD)
+    @usableFromInline
+    static let SHUT_WR: CInt = CInt(SHUT_WR)
+    @usableFromInline
+    static let SHUT_RDWR: CInt = CInt(SHUT_RDWR)
     #endif
     #else
     @usableFromInline
@@ -526,6 +558,12 @@ internal enum Posix: Sendable {
     static let IPTOS_ECN_ECT0: CInt = CInt(0x02)
     static let IPTOS_ECN_ECT1: CInt = CInt(0x01)
     static let IPTOS_ECN_CE: CInt = CInt(0x03)
+    #elseif os(WASI)
+    static let IPTOS_ECN_NOTECT: CInt = CInt(IPTOS_ECN_NOTECT)
+    static let IPTOS_ECN_MASK: CInt = CInt(IPTOS_ECN_MASK)
+    static let IPTOS_ECN_ECT0: CInt = CInt(IPTOS_ECN_ECT0)
+    static let IPTOS_ECN_ECT1: CInt = CInt(IPTOS_ECN_ECT1)
+    static let IPTOS_ECN_CE: CInt = CInt(IPTOS_ECN_CE)
     #endif
 
     #if canImport(Darwin)
@@ -535,11 +573,17 @@ internal enum Posix: Sendable {
     static let IPV6_RECVPKTINFO: CInt = CNIODarwin_IPV6_RECVPKTINFO
     static let IPV6_PKTINFO: CInt = CNIODarwin_IPV6_PKTINFO
     #elseif os(Linux) || os(FreeBSD) || os(Android)
-    static let IP_RECVPKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO)
+    static let IP_RECVPKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO) // SM: This is probably a bug, should be `= CNIOLinux.IP_RECVPKTINFO`
     static let IP_PKTINFO: CInt = CInt(CNIOLinux.IP_PKTINFO)
 
     static let IPV6_RECVPKTINFO: CInt = CInt(CNIOLinux.IPV6_RECVPKTINFO)
     static let IPV6_PKTINFO: CInt = CInt(CNIOLinux.IPV6_PKTINFO)
+    #elseif os(WASI)
+    static let IP_RECVPKTINFO: CInt = CInt(IPV6_RECVPKTINFO)
+    static let IP_PKTINFO: CInt = CInt(IP_PKTINFO)
+
+    static let IPV6_RECVPKTINFO: CInt = CInt(IPV6_RECVPKTINFO)
+    static let IPV6_PKTINFO: CInt = CInt(IPV6_PKTINFO)
     #elseif os(Windows)
     static let IP_PKTINFO: CInt = CInt(WinSDK.IP_PKTINFO)
 
@@ -744,6 +788,7 @@ internal enum Posix: Sendable {
         }
     }
 
+    #if !os(WASI)
     @inline(never)
     public static func recvmsg(
         descriptor: CInt,
@@ -754,6 +799,7 @@ internal enum Posix: Sendable {
             sysRecvMsg(descriptor, msgHdr, flags)
         }
     }
+    
 
     @inline(never)
     public static func sendmsg(
@@ -765,6 +811,7 @@ internal enum Posix: Sendable {
             sysSendMsg(descriptor, msgHdr, flags)
         }
     }
+    #endif // !os(WASI)
 
     @discardableResult
     @inline(never)
@@ -775,6 +822,7 @@ internal enum Posix: Sendable {
     }
     #endif
 
+    #if !os(WASI)
     @discardableResult
     @inline(never)
     public static func dup(descriptor: CInt) throws -> CInt {
@@ -782,6 +830,7 @@ internal enum Posix: Sendable {
             sysDup(descriptor)
         }.result
     }
+    #endif
 
     #if !os(Windows)
     // It's not really posix but exists on Linux and MacOS / BSD so just put it here for now to keep it simple
@@ -823,6 +872,7 @@ internal enum Posix: Sendable {
         }
     }
 
+    #if !os(WASI)
     @inline(never)
     public static func sendmmsg(
         sockfd: CInt,
@@ -847,6 +897,7 @@ internal enum Posix: Sendable {
             Int(sysRecvMmsg(sockfd, msgvec, vlen, flags, timeout))
         }
     }
+    #endif // !os(WASI)
 
     @inline(never)
     public static func getpeername(
@@ -871,12 +922,14 @@ internal enum Posix: Sendable {
     }
     #endif
 
+    #if !os(WASI)
     @inline(never)
     public static func if_nametoindex(_ name: UnsafePointer<CChar>?) throws -> CUnsignedInt {
         try syscall(blocking: false) {
             sysIfNameToIndex(name!)
         }.result
     }
+    #endif
 
     #if !os(Windows)
     @inline(never)
@@ -967,7 +1020,7 @@ internal enum Posix: Sendable {
             sysClosedir(dir)
         }
     }
-    #elseif os(Linux) || os(FreeBSD) || os(Android)
+    #elseif os(Linux) || os(FreeBSD) || os(Android) || os(WASI)
     @inline(never)
     public static func opendir(pathname: String) throws -> OpaquePointer {
         try syscall {
@@ -1004,6 +1057,7 @@ internal enum Posix: Sendable {
         }
     }
 
+    #if !os(WASI)
     @inline(never)
     public static func socketpair(
         domain: NIOBSDSocket.ProtocolFamily,
@@ -1015,6 +1069,7 @@ internal enum Posix: Sendable {
             sysSocketpair(domain.rawValue, type.rawValue, protocolSubtype.rawValue, socketVector!)
         }
     }
+    #endif // !os(WASI)
     #endif
     #if !os(Windows)
     @inline(never)
