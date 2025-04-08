@@ -106,6 +106,36 @@ let S_IFBLK = UInt32(SwiftGlibc.S_IFBLK)
 
 // Declare aliases to share more code and not need to repeat #if #else blocks
 
+// TODO: sm: BIG PROBLEM: linker errors getting socket to compile AND link.
+// See https://app.clickup.com/t/86b4jtf95
+/*
+Root problem is that swift wasm toolchain doesn't have preview 2 libs in their sdk yet. I can research that. But it's involved.
+I tried compiling the swift wasm toolchain in /Users/scottm/git/ThirdParty/swiftwasm-source/swiftwasm-build, but ran into atomics error
+
+Options
+- See if nio websocketclient will work using nioembedded
+- Look through dependencies and see how critical the web socket dependency is. Especially in vapor.
+- swift/uWasi??
+- Look at webworker project in swiftwasm. They are using that in production.
+- Best option is to compile preview 2 and get this to work
+- It's worth sending the linker errors to and my findings on which c imports compile to Max in my nioposix PR. Figure out why he thinks there isn't support.
+- If I don't need websockets in our dependency chain, then nuke it out of the build for now. Maybe I can get some of the non-socket examples working for proving whether this will work
+*/
+
+// TODO: SM: Explore linker errors for following. Likely due to swift wasm toolchain using wasi preview 1, but it needs wasi preview 2
+
+// HACK: SM: link: Seeing linker errors, using placeholder for now.
+#if os(WASI)
+private func bind(_: Int32, _: UnsafePointer<sockaddr>?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
+private func socket(_: Int32, _: Int32, _: Int32) -> Int32 { fatalError("SM: link: not yet implemented") }
+private func setsockopt(_: Int32, _: Int32, _: Int32, _: UnsafeRawPointer?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
+private func listen(_: Int32, _: Int32) -> Int32 { fatalError("SM: link: not yet implemented") }
+private func connect(_: Int32, _: UnsafePointer<sockaddr>?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
+
+private func getpeername(_: CInt, _: UnsafeMutablePointer<sockaddr>?, _: UnsafeMutablePointer<socklen_t>?) -> CInt  { fatalError("SM: link: not yet implemented") }
+private func getsockname(_: CInt, _: UnsafeMutablePointer<sockaddr>?, _: UnsafeMutablePointer<socklen_t>?) -> CInt { fatalError("SM: link: not yet implemented") }
+#endif // os(WASI)
+
 #if !os(Windows)
 private let sysClose = close
 private let sysShutdown = shutdown

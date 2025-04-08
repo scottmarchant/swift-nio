@@ -12,6 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if os(WASI)
+// HACK: SM: link: Seeing linker errors, using placeholder for now.
+
+private func HACK_pthread_getname_np(_: pthread_t, _: UnsafeMutablePointer<CChar>, _: Int) -> Int32 { fatalError("SM: link: not yet implemented") }
+private func HACK_pthread_setname_np(_ p: pthread_t, _ pointer: UnsafePointer<Int8>) -> Int32 { fatalError("SM: link: not yet implemented") }
+#endif
+
 #if os(Linux) || os(Android) || os(FreeBSD) || os(WASI) || canImport(Darwin)
 
 #if os(Linux) || os(Android)
@@ -26,8 +33,8 @@ private typealias ThreadDestructor = @convention(c) (UnsafeMutableRawPointer?) -
 #endif
 #elseif os(WASI)
 import CNIOWASI
-private let sys_pthread_getname_np = pthread_getname_np
-private let sys_pthread_setname_np = pthread_setname_np
+private let sys_pthread_getname_np = HACK_pthread_getname_np
+private let sys_pthread_setname_np = HACK_pthread_setname_np
 private typealias ThreadDestructor = @convention(c) (UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
 
 #elseif canImport(Darwin)
