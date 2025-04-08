@@ -47,6 +47,253 @@
 #include <bits/dirent.h>
 #include <bits/signal.h>
 
+// TODO: SM: Remove notes about importable headers below
+
+// // All below (c posix lib) compiles with 0.2
+// #include <assert.h>
+// #include <complex.h>
+// #include <ctype.h>
+// #include <dirent.h>
+// #include <dlfcn.h>
+// #include <errno.h>
+// #include <fcntl.h>
+// #include <fenv.h>
+// #include <float.h>
+// #include <inttypes.h>
+// #include <iso646.h>
+// #include <limits.h>
+// #include <locale.h>
+// #include <math.h>
+// #include <pthread.h>
+// // #include <setjmp.h> // No in WASI 0.2
+// // #include <signal.h> // No in WASI 0.2, but there is emulated signal support
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stddef.h>
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <sys/stat.h>
+// #include <tgmath.h>
+// #include <time.h>
+// #include <unistd.h>
+// #include <utime.h>
+// #include <wchar.h>
+// #include <wctype.h>
+// 
+// #include <sys/socket.h>
+
+// // All below (c posix lib) compiles with 0.2
+// // #include <aio.h>
+// #include <arpa/inet.h>
+// #include <assert.h>
+// #include <complex.h>
+// #include <cpio.h>
+// #include <ctype.h>
+// #include <dirent.h>
+// #include <dlfcn.h>
+// #include <errno.h>
+// #include <fcntl.h>
+// #include <fenv.h>
+// #include <float.h>
+// #include <fmtmsg.h>
+// #include <fnmatch.h>
+// #include <ftw.h>
+// #include <glob.h>
+// // #include <grp.h> // No
+// #include <iconv.h>
+// #include <inttypes.h>
+// #include <iso646.h>
+// #include <langinfo.h>
+// #include <libgen.h>
+// #include <limits.h>
+// #include <locale.h>
+// #include <math.h>
+// #include <monetary.h>
+// #include <mqueue.h>
+// // #include <ndbm.h> // No
+// // #include <net/if.h> // No
+// // #include <netdb.h> // No
+// #include <netinet/in.h>
+// #include <netinet/tcp.h>
+// #include <nl_types.h>
+// #include <poll.h>
+// #include <pthread.h>
+// // #include <pwd.h> // No
+// #include <regex.h>
+// #include <sched.h>
+// #include <search.h>
+// #include <semaphore.h>
+// // #include <setjmp.h> // No
+// // #include <signal.h> // No
+// // #include <spawn.h> // No
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stddef.h>
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <strings.h>
+// #include <stropts.h>
+// // #include <sys/ipc.h> // No
+// // #include <sys/mman.h> // No
+// // #include <sys/msg.h> // No
+// // #include <sys/resource.h> // No
+// #include <sys/select.h>
+// // #include <sys/sem.h> // No
+// // #include <sys/shm.h> // No
+// #include <sys/socket.h>
+// #include <sys/stat.h>
+// #include <sys/statvfs.h>
+// #include <sys/time.h>
+// // #include <sys/times.h> // No
+// #include <sys/types.h>
+// #include <sys/uio.h>
+// #include <sys/un.h>
+// #include <sys/utsname.h>
+// // #include <sys/wait.h> // No
+// // #include <syslog.h> // No
+// #include <tar.h>
+// // #include <termios.h> // No
+// #include <tgmath.h>
+// #include <time.h>
+// // #include <trace.h> // No
+// // #include <ulimit.h> // No
+// #include <unistd.h>
+// #include <utime.h>
+// // #include <utmpx.h> // No
+// #include <wchar.h>
+// #include <wctype.h>
+// // #include <wordexp.h> // No
+
+
+
+// // All below (c posix lib) compiles with 0.1
+// #include <assert.h>
+// #include <complex.h>
+// #include <ctype.h>
+// #include <dirent.h>
+// #include <dlfcn.h>
+// #include <errno.h>
+// #include <fcntl.h>
+// #include <fenv.h>
+// #include <float.h>
+// #include <inttypes.h>
+// #include <iso646.h>
+// #include <limits.h>
+// #include <locale.h>
+// #include <math.h>
+// #include <pthread.h>
+// // #include <setjmp.h> // No in WASI 0.1
+// // #include <signal.h> // No in WASI 0.1
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stddef.h>
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <sys/stat.h>
+// #include <tgmath.h>
+// #include <time.h>
+// #include <unistd.h>
+// #include <utime.h>
+// #include <wchar.h>
+// #include <wctype.h>
+// 
+// #include <sys/socket.h> // No in WASI 0.1
+
+// // All below (c posix lib) compiles with 0.1
+// // #include <aio.h> // No
+// #include <arpa/inet.h>
+// #include <assert.h>
+// #include <complex.h>
+// #include <cpio.h>
+// #include <ctype.h>
+// #include <dirent.h>
+// #include <dlfcn.h>
+// #include <errno.h>
+// #include <fcntl.h>
+// #include <fenv.h>
+// #include <float.h>
+// #include <fmtmsg.h>
+// #include <fnmatch.h>
+// #include <ftw.h>
+// #include <glob.h>
+// // #include <grp.h> // No
+// #include <iconv.h>
+// #include <inttypes.h>
+// #include <iso646.h>
+// #include <langinfo.h>
+// #include <libgen.h>
+// #include <limits.h>
+// #include <locale.h>
+// #include <math.h>
+// #include <monetary.h>
+// #include <mqueue.h>
+// // #include <ndbm.h> // No
+// // #include <net/if.h> // No
+// // #include <netdb.h> // No
+// #include <netinet/in.h>
+// #include <netinet/tcp.h>
+// #include <nl_types.h>
+// #include <poll.h>
+// #include <pthread.h>
+// // #include <pwd.h> // No
+// #include <regex.h>
+// #include <sched.h>
+// #include <search.h>
+// #include <semaphore.h>
+// // #include <setjmp.h> // No
+// // #include <signal.h> // No
+// // #include <spawn.h> // No
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stddef.h>
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <strings.h>
+// #include <stropts.h>
+// // #include <sys/ipc.h> // No
+// // #include <sys/mman.h> // No
+// // #include <sys/msg.h> // No
+// // #include <sys/resource.h> // No
+// #include <sys/select.h>
+// // #include <sys/sem.h> // No
+// // #include <sys/shm.h> // No
+// #include <sys/socket.h>
+// #include <sys/stat.h>
+// #include <sys/statvfs.h>
+// #include <sys/time.h>
+// // #include <sys/times.h> // No
+// #include <sys/types.h>
+// #include <sys/uio.h>
+// #include <sys/un.h>
+// #include <sys/utsname.h>
+// // #include <sys/wait.h> // No
+// // #include <syslog.h> // No
+// #include <tar.h>
+// // #include <termios.h> // No
+// #include <tgmath.h>
+// #include <time.h>
+// // #include <trace.h> // No
+// // #include <ulimit.h> // No
+// #include <unistd.h>
+// #include <utime.h>
+// // #include <utmpx.h> // No
+// #include <wchar.h>
+// #include <wctype.h>
+// // #include <wordexp.h> // No
+
+
+
+
+// foo
+
 // TODO: Figure out how to get WASI_EMULATED_SIGNAL to compile. The .a lib is there in the swift wasm wasilibc
 // Once this is figured out, `BaseSocketProtocol.ignoreSIGPIPE` can be implemented.
 // #include <signal.h>
