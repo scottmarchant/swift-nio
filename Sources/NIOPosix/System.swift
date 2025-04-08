@@ -102,6 +102,8 @@ let S_IFBLK = UInt32(SwiftGlibc.S_IFBLK)
 // try to do a wrapper similar to sendmmsg, but for sysBind. If that works, then I have a path forward on a lot of this.
 
 
+// SM: for epoll, look at this: https://github.com/WebAssembly/wasi-sockets/blob/main/Posix-compatibility.md
+
 // Declare aliases to share more code and not need to repeat #if #else blocks
 
 #if !os(Windows)
