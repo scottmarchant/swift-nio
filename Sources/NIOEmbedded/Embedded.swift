@@ -305,7 +305,7 @@ public final class EmbeddedEventLoop: EventLoop, CustomStringConvertible {
         }
     }
 
-    #if canImport(Dispatch)
+    #if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
     /// - see: `EventLoop.shutdownGracefully`
     public func shutdownGracefully(queue: DispatchQueue, _ callback: @escaping (Error?) -> Void) {
         self.checkCorrectThread()

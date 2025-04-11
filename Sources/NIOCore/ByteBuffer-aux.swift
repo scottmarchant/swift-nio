@@ -303,7 +303,7 @@ extension ByteBuffer {
         }
     }
 
-    #if canImport(Dispatch)
+    #if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
     // MARK: DispatchData APIs
     /// Write `dispatchData` into this `ByteBuffer`, moving the writer index forward appropriately.
     ///
@@ -709,7 +709,7 @@ extension ByteBuffer {
         self = ByteBufferAllocator().buffer(buffer: buffer)
     }
 
-    #if canImport(Dispatch)
+    #if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
     /// Create a fresh `ByteBuffer` containing the bytes contained in the given `DispatchData`.
     ///
     /// This will allocate a new `ByteBuffer` with enough space to fit the bytes of the `DispatchData` and potentially
@@ -850,7 +850,7 @@ extension ByteBufferAllocator {
         return newBuffer
     }
 
-    #if canImport(Dispatch)
+    #if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
     /// Create a fresh `ByteBuffer` containing the bytes contained in the given `DispatchData`.
     ///
     /// This will allocate a new `ByteBuffer` with enough space to fit the bytes of the `DispatchData` and potentially

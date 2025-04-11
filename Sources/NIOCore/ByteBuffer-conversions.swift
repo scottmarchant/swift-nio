@@ -50,7 +50,7 @@ extension String {
     }
 }
 
-#if canImport(Dispatch)
+#if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
 extension DispatchData {
 
     /// Creates a `DispatchData` from a given `ByteBuffer`. The entire readable portion of the buffer will be read.
