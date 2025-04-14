@@ -31,6 +31,8 @@ import Dispatch
 
 #if os(Linux) || os(FreeBSD) || os(Android)
 import CNIOLinux
+#elseif os(WASI)
+import CNIOWASI
 #endif
 
 #if os(Windows)

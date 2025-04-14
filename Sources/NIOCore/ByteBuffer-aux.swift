@@ -16,6 +16,8 @@ import _NIOBase64
 
 #if canImport(Dispatch)
 import Dispatch
+#elseif os(WASI)
+import struct FoundationEssentials.Data // TODO: SM: Can I even use this import right now. Maybe import struct Foundation.Data instead?
 #endif
 
 extension ByteBuffer {
