@@ -124,18 +124,6 @@ Options
 
 // TODO: SM: Explore linker errors for following. Likely due to swift wasm toolchain using wasi preview 1, but it needs wasi preview 2
 
-// HACK: SM: link: Seeing linker errors, using placeholder for now.
-#if os(WASI)
-private func bind(_: Int32, _: UnsafePointer<sockaddr>?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
-private func socket(_: Int32, _: Int32, _: Int32) -> Int32 { fatalError("SM: link: not yet implemented") }
-private func setsockopt(_: Int32, _: Int32, _: Int32, _: UnsafeRawPointer?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
-private func listen(_: Int32, _: Int32) -> Int32 { fatalError("SM: link: not yet implemented") }
-private func connect(_: Int32, _: UnsafePointer<sockaddr>?, _: socklen_t) -> Int32 { fatalError("SM: link: not yet implemented") }
-
-private func getpeername(_: CInt, _: UnsafeMutablePointer<sockaddr>?, _: UnsafeMutablePointer<socklen_t>?) -> CInt  { fatalError("SM: link: not yet implemented") }
-private func getsockname(_: CInt, _: UnsafeMutablePointer<sockaddr>?, _: UnsafeMutablePointer<socklen_t>?) -> CInt { fatalError("SM: link: not yet implemented") }
-#endif // os(WASI)
-
 #if !os(Windows)
 private let sysClose = close
 private let sysShutdown = shutdown
