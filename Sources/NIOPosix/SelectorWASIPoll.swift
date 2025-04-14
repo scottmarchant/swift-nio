@@ -13,10 +13,12 @@ import CNIOWASI
 extension Selector: _SelectorBackendProtocol {
     func initialiseState0() throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     func deinitAssertions0() {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     func register0(
@@ -26,6 +28,7 @@ extension Selector: _SelectorBackendProtocol {
         registrationID: SelectorRegistrationID
     ) throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     func reregister0(
@@ -36,6 +39,7 @@ extension Selector: _SelectorBackendProtocol {
         registrationID: SelectorRegistrationID
     ) throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     func deregister0(
@@ -45,6 +49,7 @@ extension Selector: _SelectorBackendProtocol {
         registrationID: SelectorRegistrationID
     ) throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     /// Apply the given `SelectorStrategy` and execute `body` once it's complete (which may produce `SelectorEvent`s to handle).
@@ -59,6 +64,7 @@ extension Selector: _SelectorBackendProtocol {
         _ body: (SelectorEvent<R>) throws -> Void
     ) throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     /// Close the `Selector`.
@@ -66,11 +72,13 @@ extension Selector: _SelectorBackendProtocol {
     /// After closing the `Selector` it's no longer possible to use it.
     public func close0() throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 
     // attention, this may (will!) be called from outside the event loop, ie. can't access mutable shared state (such as `self.open`)
     func wakeup0() throws {
         // TODO: SM: Implement this
+        fatalError("Not yet implemented")
     }
 }
 

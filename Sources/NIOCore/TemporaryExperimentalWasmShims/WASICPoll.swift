@@ -26,11 +26,13 @@ package struct WASICPoll {
     package struct poll_event {
         @usableFromInline
         package init() {
+            fatalError("Not yet implemented")
             // TODO: SM: Implement all the things!
         }
     }
     @usableFromInline
     package init() {
+        fatalError("Not yet implemented")
         // TODO: SM: Implement all the things!
     }
 }

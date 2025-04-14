@@ -23,6 +23,7 @@ package class CAddressInfo {
     package let ai_socktype: Int32
     package let ai_protocol: Int32
     package var pointee: CAddressInfo {
+        fatalError("Not yet implemented")
         self
     }
 
@@ -35,6 +36,7 @@ package class CAddressInfo {
         ai_socktype: Int32,
         ai_protocol: Int32
     ) {
+        fatalError("Not yet implemented")
         // TODO: SM: Implement everything and store real values here
         self.ai_socktype = ai_socktype
         self.ai_protocol = ai_protocol
@@ -47,11 +49,14 @@ package class CAddressInfo {
 
 // https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo
 package func getaddrinfo(host: String, port: String, hint: CAddressInfo) -> CAddressInfo? {
+    fatalError("Not yet implemented")
     // TODO: SM: Implement getaddrinfo
-    nil
+    return nil
 }
 
 package func freeaddrinfo(_: CAddressInfo) {
+    // TODO: SM: Depending on implementation, this might not be able to be a no-op.
+    
     // This is a noop for this shim's implementation, since it uses a struct and swifty api's.
 }
 
