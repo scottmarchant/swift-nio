@@ -1867,7 +1867,7 @@ extension EventLoopFuture {
 
 // MARK: may block
 
-#if canImport(Dispatch)
+#if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
 extension EventLoopFuture {
     /// Chain an `EventLoopFuture<NewValue>` providing the result of a IO / task that may block. For example:
     ///

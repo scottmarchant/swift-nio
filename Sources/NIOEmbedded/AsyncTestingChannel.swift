@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if canImport(Dispatch)
+#if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
 import NIOConcurrencyHelpers
 import NIOCore
 

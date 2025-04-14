@@ -36,7 +36,6 @@ extension EventLoopFuture {
     }
 }
 
-#if canImport(Dispatch)
 extension EventLoopGroup {
     /// Shuts down the event loop gracefully.
     ///
@@ -56,7 +55,6 @@ extension EventLoopGroup {
         }
     }
 }
-#endif
 
 extension EventLoopPromise {
     /// Complete a future with the result (or error) of the `async` function `body`.

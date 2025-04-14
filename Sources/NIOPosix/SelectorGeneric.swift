@@ -17,6 +17,12 @@ import NIOCore
 
 #if os(Linux)
 import CNIOLinux
+#elseif os(WASI)
+import CNIOWASI
+#if canImport(WASILibc)
+import WASILibc
+#endif
+import wasi_pthread
 #endif
 
 @usableFromInline
@@ -46,7 +52,11 @@ extension timespec {
         let nsecPerSec: Int64 = 1_000_000_000
         let ns = amount.nanoseconds
         let sec = ns / nsecPerSec
+        #if os(WASI)
+        self = timespec(tv_sec: time_t(sec), tv_nsec: Int(ns - sec * nsecPerSec))
+        #else
         self = timespec(tv_sec: Int(sec), tv_nsec: Int(ns - sec * nsecPerSec))
+        #endif
     }
 }
 #endif
@@ -210,6 +220,15 @@ internal class Selector<R: Registration> {
     @usableFromInline
     var deferredReregistrationsPending = false  // true if flush needed when reentring whenReady()
     #endif
+    #elseif os(WASI)
+    @usableFromInline
+    typealias EventType = WASICPoll.poll_event
+    @usableFromInline
+    var earliestTimer: NIODeadline = .distantFuture
+    @usableFromInline
+    var eventFD: CInt = -1  // -1 == we're closed
+    @usableFromInline
+    var timerFD: CInt = -1  // -1 == we're closed
     #else
     #error("Unsupported platform, no suitable selector backend (we need kqueue or epoll support)")
     #endif

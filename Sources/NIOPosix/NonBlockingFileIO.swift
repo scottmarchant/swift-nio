@@ -12,9 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if !os(WASI)
 import CNIOLinux
+#elseif os(WASI)
+#if canImport(WASILibc)
+@preconcurrency import WASILibc
+#endif
+import CNIOWASI
+#endif
+
 import NIOConcurrencyHelpers
 import NIOCore
+
+
 
 /// ``NonBlockingFileIO`` is a helper that allows you to read files without blocking the calling thread.
 ///
@@ -798,10 +808,17 @@ public struct NonBlockingFileIO: Sendable {
             var entries: [NIODirectoryEntry] = []
             do {
                 while let entry = try Posix.readdir(dir: dir) {
-                    let name = withUnsafeBytes(of: entry.pointee.d_name) { pointer -> String in
+                    #if os(WASI)
+                    let dNameCPointer = CNIOWASI_dirent_dname(entry)
+                    #else
+                    let dNameCPointer = entry.pointee.d_name
+                    #endif
+
+                    let name = withUnsafeBytes(of: dNameCPointer) { pointer -> String in
                         let ptr = pointer.baseAddress!.assumingMemoryBound(to: CChar.self)
                         return String(cString: ptr)
                     }
+                    
                     entries.append(
                         NIODirectoryEntry(ino: UInt64(entry.pointee.d_ino), type: entry.pointee.d_type, name: name)
                     )
@@ -1247,7 +1264,13 @@ extension NonBlockingFileIO {
             var entries: [NIODirectoryEntry] = []
             do {
                 while let entry = try Posix.readdir(dir: dir) {
-                    let name = withUnsafeBytes(of: entry.pointee.d_name) { pointer -> String in
+                    #if os(WASI)
+                    let dNameCPointer = CNIOWASI_dirent_dname(entry)
+                    #else
+                    let dNameCPointer = entry.pointee.d_name
+                    #endif
+
+                    let name = withUnsafeBytes(of: dNameCPointer) { pointer -> String in
                         let ptr = pointer.baseAddress!.assumingMemoryBound(to: CChar.self)
                         return String(cString: ptr)
                     }

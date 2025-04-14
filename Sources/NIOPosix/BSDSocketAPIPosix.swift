@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 import NIOCore
 
-#if os(Linux) || os(Android) || os(FreeBSD) || canImport(Darwin)
+#if os(Linux) || os(Android) || os(FreeBSD) || canImport(Darwin) || os(WASI)
 
 extension Shutdown {
     internal var cValue: CInt {
@@ -102,6 +102,7 @@ extension NIOBSDSocket {
         try Posix.read(descriptor: s, pointer: buf, size: len)
     }
 
+    #if !os(WASI)
     static func recvmsg(
         socket: NIOBSDSocket.Handle,
         msgHdr: UnsafeMutablePointer<msghdr>,
@@ -121,6 +122,7 @@ extension NIOBSDSocket {
     {
         try Posix.sendmsg(descriptor: socket, msgHdr: msgHdr, flags: flags)
     }
+    #endif // !os(WASI)
 
     static func send(
         socket s: NIOBSDSocket.Handle,
@@ -158,6 +160,7 @@ extension NIOBSDSocket {
         try Posix.socket(domain: af, type: type, protocolSubtype: protocolSubtype)
     }
 
+    #if !os(WASI)
     static func recvmmsg(
         socket: NIOBSDSocket.Handle,
         msgvec: UnsafeMutablePointer<MMsgHdr>,
@@ -187,6 +190,7 @@ extension NIOBSDSocket {
             flags: flags
         )
     }
+    #endif // !os(WASI)
 
     // NOTE: this should return a `ssize_t`, however, that is not a standard
     // type, and defining that type is difficult.  Opt to return a `size_t`
@@ -269,6 +273,14 @@ private let CMSG_DATA = CNIODarwin_CMSG_DATA
 private let CMSG_DATA_MUTABLE = CNIODarwin_CMSG_DATA_MUTABLE
 private let CMSG_SPACE = CNIODarwin_CMSG_SPACE
 private let CMSG_LEN = CNIODarwin_CMSG_LEN
+#elseif os(WASI)
+import CNIOWASI
+private let CMSG_FIRSTHDR = CNIOWASI_CMSG_FIRSTHDR
+private let CMSG_NXTHDR = CNIOWASI_CMSG_NXTHDR
+private let CMSG_DATA = CNIOWASI_CMSG_DATA
+private let CMSG_DATA_MUTABLE = CNIOWASI_CMSG_DATA_MUTABLE
+private let CMSG_SPACE = CNIOWASI_CMSG_SPACE
+private let CMSG_LEN = CNIOWASI_CMSG_LEN
 #else
 import CNIOLinux
 private let CMSG_FIRSTHDR = CNIOLinux_CMSG_FIRSTHDR

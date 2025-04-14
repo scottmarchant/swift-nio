@@ -58,6 +58,14 @@ import CNIOLinux
 #error("The Socket Addresses module was unable to identify your C library.")
 #endif
 
+// SM: Is this the right home for this? If I move it to experimental shim file, I don't have the imports
+// TODO: SM: There is confusingly similar typealias in GetaddrinfoResolver.swift, line 206 or so.
+#if os(WASI)
+package typealias AddressInfoReference = CAddressInfo
+#else
+package typealias AddressInfoReference = UnsafeMutablePointer<addrinfo>
+#endif
+
 /// Special `Error` that may be thrown if we fail to create a `SocketAddress`.
 public enum SocketAddressError: Error, Equatable, Hashable {
     /// The host is unknown (could not be resolved).
@@ -465,6 +473,8 @@ public enum SocketAddress: CustomStringConvertible, Sendable {
     /// - Returns: the `SocketAddress` for the host / port pair.
     /// - Throws: a `SocketAddressError.unknown` if we could not resolve the `host`, or `SocketAddressError.unsupported` if the address itself is not supported (yet).
     public static func makeAddressResolvingHost(_ host: String, port: Int) throws -> SocketAddress {
+        // TODO: SM: I need to copy implementation from GetaddrinfoResolver in NIOPosix here, and look at any #if !os(WASI) elisions
+        // in this file
         #if os(WASI)
         throw SocketAddressError.unsupported
         #endif
@@ -497,7 +507,7 @@ public enum SocketAddress: CustomStringConvertible, Sendable {
             }
         }
         #elseif !os(WASI)
-        var info: UnsafeMutablePointer<addrinfo>?
+        var info: AddressInfoReference?
 
         // FIXME: this is blocking!
         if getaddrinfo(host, String(port), nil, &info) != 0 {

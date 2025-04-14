@@ -15,6 +15,10 @@ import CNIODarwin
 import CNIOLinux
 import NIOCore
 
+#if os(WASI)
+import CNIOWASI
+#endif
+
 /// An object that manages issuing vector reads for datagram channels.
 ///
 /// Datagram channels have slightly complex read semantics, as high-throughput datagram
@@ -77,6 +81,7 @@ struct DatagramVectorReadManager {
         self.controlMessageStorage = controlMessageStorage
     }
 
+    #if !os(WASI)
     /// Performs a socket vector read.
     ///
     /// This method takes a single byte buffer and segments it into `messageCount` pieces. It then
@@ -156,6 +161,7 @@ struct DatagramVectorReadManager {
             )
         }
     }
+    #endif // !os(WASI)
 
     /// Destroys this vector read manager, rendering it impossible to re-use. Use of the vector read manager after this is called is not possible.
     mutating func deallocate() {

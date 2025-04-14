@@ -2341,6 +2341,7 @@ public final class NIOPipeBootstrap {
         #endif
     }
 
+    #if !os(WASI) // WASI doesn't support Posix.dup right now
     /// Create the `PipeChannel` with the provided file descriptor which is used for both input & output.
     ///
     /// This method is useful for specialilsed use-cases where you want to use `NIOPipeBootstrap` for say a serial line.
@@ -2362,6 +2363,7 @@ public final class NIOPipeBootstrap {
             throw error
         }
     }
+    #endif // !os(WASI)
 
     /// Create the `PipeChannel` with the provided input and output file descriptors.
     ///
@@ -2439,10 +2441,12 @@ public final class NIOPipeBootstrap {
         )
     }
 
+    #if !os(WASI)
     @available(*, deprecated, renamed: "takingOwnershipOfDescriptor(inputOutput:)")
     public func withInputOutputDescriptor(_ fileDescriptor: CInt) -> EventLoopFuture<Channel> {
         self.takingOwnershipOfDescriptor(inputOutput: fileDescriptor)
     }
+    #endif
 
     @available(*, deprecated, renamed: "takingOwnershipOfDescriptors(input:output:)")
     public func withPipes(inputDescriptor: CInt, outputDescriptor: CInt) -> EventLoopFuture<Channel> {
@@ -2453,6 +2457,7 @@ public final class NIOPipeBootstrap {
 // MARK: Arbitrary payload
 
 extension NIOPipeBootstrap {
+    #if !os(WASI) // WASI doesn't support Posix.dup right now
     /// Create the `PipeChannel` with the provided file descriptor which is used for both input & output.
     ///
     /// This method is useful for specialilsed use-cases where you want to use `NIOPipeBootstrap` for say a serial line.
@@ -2486,6 +2491,7 @@ extension NIOPipeBootstrap {
             throw error
         }
     }
+    #endif // end !os(WASI)
 
     /// Create the `PipeChannel` with the provided input and output file descriptors.
     ///

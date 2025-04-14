@@ -171,6 +171,7 @@ class Socket: BaseSocket, SocketProtocol {
         }
     }
 
+    #if !os(WASI)
     /// Send data to a destination.
     ///
     /// - Parameters:
@@ -230,6 +231,7 @@ class Socket: BaseSocket, SocketProtocol {
             }
         }
     }
+    #endif // !os(WASI)
 
     /// Read data from the socket.
     ///
@@ -243,6 +245,7 @@ class Socket: BaseSocket, SocketProtocol {
         }
     }
 
+    #if !os(WASI)
     /// Receive data from the socket, along with aditional control information.
     ///
     /// - Parameters:
@@ -314,6 +317,7 @@ class Socket: BaseSocket, SocketProtocol {
             }
         }
     }
+    #endif // !os(WASI)
 
     /// Send the content of a file descriptor to the remote peer (if possible a zero-copy strategy is applied).
     ///
@@ -334,6 +338,7 @@ class Socket: BaseSocket, SocketProtocol {
         }
     }
 
+    #if !os(WASI)
     /// Receive `MMsgHdr`s.
     ///
     /// - Parameters:
@@ -368,6 +373,7 @@ class Socket: BaseSocket, SocketProtocol {
             )
         }
     }
+    #endif // !os(WASI)
 
     /// Shutdown the socket.
     ///

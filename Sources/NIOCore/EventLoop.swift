@@ -1415,7 +1415,7 @@ public protocol EventLoopGroup: AnyObject, _NIOPreconcurrencySendable {
     /// future or kick off some operation, use `any()`.
     func any() -> EventLoop
 
-    #if canImport(Dispatch)
+    #if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
     /// Shuts down the eventloop gracefully. This function is clearly an outlier in that it uses a completion
     /// callback instead of an EventLoopFuture. The reason for that is that NIO's EventLoopFutures will call back on an event loop.
     /// The virtue of this function is to shut the event loop down. To work around that we call back on a DispatchQueue
@@ -1443,10 +1443,11 @@ extension EventLoopGroup {
     }
 }
 
-#if canImport(Dispatch)
+// TODO: SM: Figure out import scheme for canImport(Dispatch)
+#if canImport(Dispatch) || os(WASI)
 extension EventLoopGroup {
     @preconcurrency public func shutdownGracefully(_ callback: @escaping @Sendable (Error?) -> Void) {
-        self.shutdownGracefully(queue: .global(), callback)
+        self.shutdownGracefully(queue: DispatchQueue.global(), callback)
     }
 
     @available(*, noasync, message: "this can end up blocking the calling thread", renamed: "shutdownGracefully()")

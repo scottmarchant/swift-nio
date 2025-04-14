@@ -14,7 +14,9 @@
 
 #if canImport(Dispatch)
 import Dispatch
+#endif
 
+#if canImport(Dispatch) || os(WASI) // TODO: SM: Figure out import scheme for canImport(Dispatch)
 extension DispatchQueue {
     /// Schedules a work item for immediate execution and immediately returns with an `EventLoopFuture` providing the
     /// result. For example:
